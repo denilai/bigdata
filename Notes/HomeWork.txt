@@ -1,0 +1,214 @@
+HW 1.1
+CREATE TABLE myT
+   (ROW_ID int,
+    TASK_ID int,
+    ASSIGNEE nvarchar(20),
+    TEAM nvarchar(1),
+    START_DATE date,
+    END_DATE date);
+	
+INSERT INTO myT
+    (ROW_ID,
+     TASK_ID,
+     ASSIGNEE,
+     TEAM,
+     START_DATE,
+     END_DATE)
+VALUES 
+    (1,1,'Sasha from A','A','2019-01-01','2019-01-02'),
+    (2,1,'Kate from A','A','2019-01-02','2019-01-03'),
+    (3,1,'Vasya from B','B','2019-01-03','2019-01-05'),
+    (4,1,'Sasha from A','A','2019-01-05','2019-01-15'),
+    (5,1,'Petya from B','B','2019-01-15','2019-01-30'),
+    (6,1,'Vasya from B','B','2019-01-30','2019-01-31'),
+    (7,1,'Petya from B','B','2019-01-31','2019-02-01'),
+    (8,2,'Sasha from A','A','2019-01-01','2019-01-02'),
+    (9,2,'Kate from A','A','2019-01-02','2019-01-03'),
+    (10,2,'Sasha from A','A','2019-01-03','2019-01-05'),
+    (11,2,'Vasya from B','B','2019-01-05','2019-01-15');
+
+
+
+----------- черновик 
+SELECT *, 
+CASE
+  WHEN LAG (team) over(partition by TASK_ID order by TASK_ID, END_DATE) IS NULL
+      THEN 1
+  WHEN
+    LEAD (team) over(partition by TASK_ID order by TASK_ID, END_DATE) =
+    team
+    THEN (LAG(a) over(partition by TASK_ID order by TASK_ID, END_DATE)) +1
+  WHEN(Lag(team) over(order by TASK_ID, END_DATE))='A'
+     THEN 2
+  ELSE 3 END a,
+  row_number() over(order by TASK_ID, END_DATE) num_ FROM myT
+
+
+
+
+----------------------- черновик
+
+SELECT *, 
+ CASE
+  WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE AND (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE)) IS NOT NULL
+     THEN 0
+  ELSE ROW_NUMBER() OVER(ORDER BY ROW_ID) END + 
+ CASE
+  WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE
+     THEN 1
+   ELSE -1 END *
+   ROW_NUMBER() OVER(PARTITION BY TASK_ID ORDER BY ROW_ID), 
+   
+ CASE
+  WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE OR (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE)) IS NULL
+     THEN 0
+  ELSE ROW_NUMBER() OVER(ORDER BY ROW_ID) END,
+  
+  CASE
+ WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE OR (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE)) IS NULL
+     THEN 1
+   ELSE -1 END, 
+   
+   ROW_NUMBER() OVER(PARTITION BY TASK_ID ORDER BY ROW_ID)
+   
+   
+   FROM myT
+  -
+
+
+
+
+
+
+
+
+-----------------------
+
+
+SELECT *, 
+ CASE
+  WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE AND (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE)) IS NOT NULL
+     THEN 0
+  ELSE ROW_NUMBER() OVER(ORDER BY ROW_ID) END + 
+ CASE
+  WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE
+     THEN 1
+   ELSE -1 END *
+   ROW_NUMBER() OVER(PARTITION BY TASK_ID ORDER BY ROW_ID), 
+   
+ CASE
+  WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE OR (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE)) IS NULL
+     THEN 0
+  ELSE ROW_NUMBER() OVER(ORDER BY ROW_ID) END,
+  
+  CASE
+ WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE OR (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE)) IS NULL
+     THEN 1
+   ELSE -1 END, 
+   
+   ROW_NUMBER() OVER(PARTITION BY TASK_ID ORDER BY ROW_ID)
+   
+   
+   FROM myT
+
+------
+на другом сайет
+
+
+
+WITH bd AS(
+	SELECT *, 
+ CASE
+  WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE OR (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE)) IS NULL
+     THEN 0
+  ELSE ROW_NUMBER() OVER(partition BY task_id ORDER BY ROW_ID) END  
+  df, ROW_NUMBER() OVER(partition BY task_id, team ORDER BY ROW_ID) rn1 FROM myT
+), bd2 AS(
+  SELECT *, df + CASE df WHEN 0 THEN 1 ELSE -1 END * ROW_NUMBER() OVER(PARTITION BY SIGN(df) ORDER BY row_id) df2,
+  ROW_NUMBER() OVER(PARTITION BY SIGN(df), team ORDER BY row_id) rn
+  FROM bd
+)
+
+SELECT * FROM bd2 ORDER BY  task_id, team, df2
+  
+
+
+
+---- ВЕРНОЕ РЕШЕНИЕ
+
+
+
+WITH bd AS(
+	SELECT *, 
+ CASE
+  WHEN
+   (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE))!=
+   START_DATE OR (LAG(END_DATE) OVER(PARTITION BY TASK_ID, TEAM ORDER BY END_DATE)) IS NULL
+     THEN 0
+  ELSE ROW_NUMBER() OVER(partition BY team ORDER BY ROW_ID) END  
+  df, ROW_NUMBER() OVER(partition BY team ORDER BY ROW_ID) rn1 FROM myT
+), bd2 AS(
+  SELECT *, df + CASE df WHEN 0 THEN 1 ELSE -1 END * ROW_NUMBER() OVER(PARTITION BY SIGN(df), team ORDER BY row_id) df2,
+  ROW_NUMBER() OVER(PARTITION BY SIGN(df), team ORDER BY row_id) rn
+  FROM bd
+), bd3 AS (
+  SELECT *, row_number() over(partition by team, df2 order by row_id) df3 FROM bd2
+)
+
+
+SELECT row_id, task_id, assignee, team, start_date, end_date, switch_num
+FROM bd3
+WHERE switch_num>1
+
+
+
+DELETE myT FROM (SELECT row_id, task_id, assignee, team, start_date, end_date, SWITCH_NUM
+FROM bd3
+WHERE SWITCH_NUM >1)  d
+
+
+ -------------- ЗАДАНИЕ 2
+
+
+CREATE TABLE TASK(
+  TASK_ID int,
+  LAST_STATUS VARCHAR,
+  LAST_ASSIGNEE VARCHAR, 
+  CREATED_DATE DATE, 
+  CLOSED_DATE DATE  
+)
+
+
+
+CREATE TABLE TASK_ASSIGNEE_HISTORY(
+  TASK_ID INT,
+  OLD_ASSIGNEE VARCHAR, 
+  NEW_ASSIGNEE VARCHAR,
+  CHANGE_DATE DATE
+)
+
+CREATE TABLE TASK_STATUS_HISTORY(
+  TASK_ID INT,
+  OLD_STATUS VARCHAR, 
+  NEW_STATUS VARCHAR,
+  CHANGE_DATE DATE
+)
+  

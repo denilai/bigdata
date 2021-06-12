@@ -1,0 +1,20 @@
+SET DATEFORMAT mdy;
+WITH leadlag As (
+  SELECT task_id, old_assignee assingnee, new_assignee,
+    coalesce(
+     convert(varchar, LAG(change_date) over(partition By task_id order by change_date), 104),
+     (SELECT convert(varchar, created_date,104) FROM TASK t WHERE t.task_id=tah.task_id)
+   ) FD,
+  convert(VARCHAR, change_date, 104) TD,
+  convert(varchar, LEAD(change_date) over(partition By task_id order by change_date), 104) lead_
+  FROM TASK_ASSIGNEE_HISTORY tah)
+  
+SELECT * FROM (
+SELECT t.task_id, coalesce(assingnee, last_assignee) assingnee ,
+  coalesce(fd, convert(varchar, created_date,104)) fd_, 
+  coalesce(td, convert(varchar, closed_date,104))td_ FROM leadlag ll FULL JOIN TASK t
+  ON t.TASK_ID=ll.task_id
+UNION ALL
+SELECT task_id, new_assignee, td, (SELECT convert(varchar, closed_date,104) FROM TASK WHERE task.task_id=leadlag.task_id) FROM leadlag
+WHERE lead_ IS NULL) d
+ORDER BY task_id, fd_
