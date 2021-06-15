@@ -1,0 +1,39 @@
+
+----- Snapshots
+Чтобы увидеть все дирректории, для которых доступно создание snapshot`ов, нужно
+использовать следующую команду:
+hdfs lsSnapshottableDir
+
+Чтобы разрешить создание снимка для дирректории нужно ввести (под su)
+hdfs dfsadmin -allowSnapshot /data/dir1
+
+Чтобы создать снимок нужно ввести
+hdfs dfs -createSnapshot /data/dir1 snap1
+
+Чтобы удалить снимок
+hdfs dfs -deleteSnapshot <путь> <имя снимка>
+
+Переименовать снимки
+Для этой операции требуются права владельца каталога моментальных снимков.
+hdfs dfs -renameSnapshot <путь> <старое имя> <новое имя>
+
+Получить отчет о различиях снимков
+Эта операция требует права доступа на чтение для всех файлов / каталогов в обоих снимках.
+hdfs snapshotDiff <путь> <от снимка> <к снимку>
+
+Восстановление данных из снимка
+Run the hdfs dfs command with the cp option to copy the deleted data from the snapshot
+to the destination directory.
+The following example shows how you can recover a file imp_details.xls from a snapshot
+of the directory (/data/dir1)
+that contained the file:
+hdfs dfs -cp /data/dir1/.snapshot/s20180412-065533.159/imp_details.xls /data/dir1/
+
+--- Содержание файла /usr/centos/test
+user_1 102200 27
+user_2 124972 77
+user_3 103874 35
+user_4 128805 80
+user_5 104714 27
+
+
