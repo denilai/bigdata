@@ -29,6 +29,8 @@ of the directory (/data/dir1)
 that contained the file:
 hdfs dfs -cp /data/dir1/.snapshot/s20180412-065533.159/imp_details.xls /data/dir1/
 
+уточнить про флаг -ptopax-c
+
 --- Содержание файла /usr/centos/test
 user_1 102200 27
 user_2 124972 77

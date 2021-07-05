@@ -1,0 +1,11 @@
+Синтаксис для уточнения параметров создания таблицы
+
+create table table1 (col1 string, col2 int) row format delimited fields terminated by ',' lines terminated by '\n' stored as textfile tblproperties ("skip.<header|footer>.line.count"=3);
+ -- для пропуска первых трех строк исходного фала
+
+load data local inpath 'path/to/file' [overwrite] into table <table_name>
+
+tblproperties("immutable"=true) -- делает таблицу неизменяемой при создании (допускается только одна операция добавления данных)
+доступна перезапись insert overwrite into table3 select * from ....
+
+tblproperties("serialization.null.format"="") -- устранавливает формат значений, рассматриваемых как NULL-значения

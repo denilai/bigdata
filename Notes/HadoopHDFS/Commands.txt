@@ -1,0 +1,34 @@
+------ Вывести атрибуты доступа и контроля (разрешения, владелец, группа)
+getfacl
+Usage: hadoop fs -getfacl [-R] <path>
+
+Displays the Access Control Lists (ACLs) of files and directories. If a directory has a default ACL, then getfacl also displays the default ACL.
+
+Options:
+
+-R: List the ACLs of all files and directories recursively.
+path: File or directory to list.
+Examples:
+
+hadoop fs -getfacl /file
+hadoop fs -getfacl -R /dir
+Exit Code:
+
+Returns 0 on success and non-zero on error.
+
+
+---- Вывести информацию о занимаемом месте, размере файла, количестве дирректорий и т д
+
+count
+Usage: hadoop fs -count [-q] [-h] [-v] [-x] [-t [<storage type>]] [-u] [-e] <paths>
+
+Count the number of directories, files and bytes under the paths that match the specified file pattern
+
+-- вывести информацию о размере файлов, размере с учетом репликаций, полном пути ....
+
+du
+Usage: hadoop fs -du [-s] [-h] [-v] [-x] URI [URI ...]
+
+Displays sizes of files and directories contained in the given directory or the length of a file in case its just a file.
+
+

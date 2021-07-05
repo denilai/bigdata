@@ -1,0 +1,29 @@
+
+-- чтобы увидеть свойства таблицы нужно ввести 
+show tblproperties <table name>;
+
+Для включения динамического партиционирования установить следующие параметры:
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+Для включения bucketing установить следующие параметры:
+
+set hive.enforce.bucketing=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+Особенности bucketing
+ - Bucket это физический файл в ФС
+ - Мы можем явно указывать количество пакетов при создании таблицы
+ Пример команды:
+create table if not exists buck4_players (name string, position string, height float, weight float, age float) partitioned by (team string) clustered by (position) into 4 buckets row format delimited fields terminated by ',' lines terminated by '\n' stored as textfile;
+ - Join с успользованием buckets - самые быстрые
+
+
+/* MAPJOIN (table_name) */ -- hint для использования mapjoin без redusers, где table_name небольшая таблица
+
+Для того, чтобы hive сам имел возможность использовать mapjoin следует установить параметр
+hive.auto.convert.join=true
+hive.mapjoin.smalltable.filesize; hive.mapjoin.smalltable.filesize=25000000 (25MB)
+
+Нельзя использвоать full outer join c map join
